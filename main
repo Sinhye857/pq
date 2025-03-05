@@ -1,0 +1,159 @@
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <random>
+#include <limits>
+#include <cassert>
+
+using namespace std;
+
+struct KMeansResult {
+    vector<vector<float>> centers;
+    vector<int> assignments;
+};
+
+float squared_euclidean_distance(const vector<float>& a, const vector<float>& b) {
+    float sum = 0.0f;
+    for (size_t i = 0; i < a.size(); ++i) {
+        float diff = a[i] - b[i];
+        sum += diff * diff;
+    }
+    return sum;
+}
+
+KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters=100) {
+    int n = data.size();
+    int dim = data[0].size();
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> distrib(0, n-1);
+
+    vector<vector<float>> centers(k);
+    for (int i = 0; i < k; ++i)
+        centers[i] = data[distrib(gen)];
+
+    vector<int> assignments(n);
+    for (int iter = 0; iter < max_iters; ++iter) {
+        bool changed = false;
+        for (int i = 0; i < n; ++i) {
+            float min_dist = numeric_limits<float>::max();
+            int best_c = 0;
+            for (int c = 0; c < k; ++c) {
+                float dist = squared_euclidean_distance(data[i], centers[c]);
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    best_c = c;
+                }
+            }
+            if (assignments[i] != best_c) {
+                assignments[i] = best_c;
+                changed = true;
+            }
+        }
+        if (!changed) break;
+
+        vector<vector<float>> new_centers(k, vector<float>(dim, 0));
+        vector<int> counts(k, 0);
+        for (int i = 0; i < n; ++i) {
+            int c = assignments[i];
+            for (int d = 0; d < dim; ++d)
+                new_centers[c][d] += data[i][d];
+            counts[c]++;
+        }
+        for (int c = 0; c < k; ++c) {
+            if (counts[c] == 0) continue;
+            for (int d = 0; d < dim; ++d)
+                new_centers[c][d] /= counts[c];
+        }
+        centers = new_centers;
+    }
+    return {centers, assignments};
+}
+
+class ProductQuantization {
+private:
+    int d, m, k, sub_dim;
+    vector<KMeansResult> cluster_results;
+    vector<vector<int>> codebook_A;
+    vector<vector<vector<float>>> distance_tables_B;
+
+    vector<vector<vector<float>>> split_into_subspaces(const vector<vector<float>>& data) {
+        vector<vector<vector<float>>> subspaces(m);
+        for (const auto& point : data) {
+            for (int i = 0; i < m; ++i) {
+                int start = i * sub_dim;
+                vector<float> sub_point(point.begin() + start, point.begin() + start + sub_dim);
+                subspaces[i].push_back(sub_point);
+            }
+        }
+        return subspaces;
+    }
+
+    vector<vector<int>> build_codebook_A(const vector<KMeansResult>& results) {
+        int n = results[0].assignments.size();
+        vector<vector<int>> A(m, vector<int>(n));
+        for (int i = 0; i < m; ++i)
+            A[i] = results[i].assignments;
+        return A;
+    }
+
+    vector<vector<vector<float>>> precompute_distance_tables() {
+        vector<vector<vector<float>>> tables(m);
+        for (int i = 0; i < m; ++i) {
+            auto& centers = cluster_results[i].centers;
+            int k = centers.size();
+            tables[i].resize(k, vector<float>(k));
+            for (int j = 0; j < k; ++j)
+                for (int l = 0; l < k; ++l)
+                    tables[i][j][l] = squared_euclidean_distance(centers[j], centers[l]);
+        }
+        return tables;
+    }
+
+public:
+    ProductQuantization(int d, int m, int k) : d(d), m(m), k(k) {
+        assert(d % m == 0);
+        sub_dim = d / m;
+    }
+
+    void train(const vector<vector<float>>& data) {
+        auto subspaces = split_into_subspaces(data);
+        cluster_results.resize(m);
+        for (int i = 0; i < m; ++i)
+            cluster_results[i] = k_means(subspaces[i], k);
+        codebook_A = build_codebook_A(cluster_results);
+        distance_tables_B = precompute_distance_tables();
+    }
+
+    pair<int, float> query(const vector<float>& q) {
+        vector<vector<float>> q_sub(m, vector<float>(sub_dim));
+        for (int i = 0; i < m; ++i)
+            copy(q.begin() + i*sub_dim, q.begin() + (i+1)*sub_dim, q_sub[i].begin());
+
+        vector<int> b_indices(m);
+        for (int i = 0; i < m; ++i) {
+            float min_dist = numeric_limits<float>::max();
+            for (int c = 0; c < k; ++c) {
+                float dist = squared_euclidean_distance(q_sub[i], cluster_results[i].centers[c]);
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    b_indices[i] = c;
+                }
+            }
+        }
+
+        int n = codebook_A[0].size();
+        float min_total = numeric_limits<float>::max();
+        int best_idx = -1;
+        for (int x = 0; x < n; ++x) {
+            float total = 0;
+            for (int i = 0; i < m; ++i)
+                total += distance_tables_B[i][codebook_A[i][x]][b_indices[i]];
+            if (total < min_total) {
+                min_total = total;
+                best_idx = x;
+            }
+        }
+        return {best_idx, min_total};
+    }
+};
