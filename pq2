@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -7,47 +8,48 @@
 
 using namespace std;
 
-// 保存K-means聚类结果的结构体
+///K-means聚类结果结构体
 struct KMeansResult {
-    vector<vector<float>> centers;  // 聚类中心坐标
-    vector<int> assignments;       // 每个数据点所属的簇索引
+    vector<vector<float>> centers;
+    vector<int> assignments;
 };
 
-// 计算两个向量的平方欧氏距离
+///计算两个向量的平方欧氏距离
 float squared_euclidean_distance(const vector<float>& a, const vector<float>& b) {
     float sum = 0.0f;
     for (size_t i = 0; i < a.size(); ++i) {
         float diff = a[i] - b[i];
-        sum += diff * diff;  // 平方差累加
+        sum += diff * diff;  // 逐元素计算平方差并累加
     }
     return sum;
 }
 
-// K-means聚类算法实现
+///K-means聚类算法实现
 KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters = 100) {
     int n = data.size();      // 数据点总数
     int dim = data[0].size(); // 数据维度
-    
-    // 随机数生成器初始化
+
+    // 初始化随机数生成器
     random_device rd;
     mt19937 gen(rd());
     uniform_int_distribution<> distrib(0, n - 1);
 
-    // 随机初始化聚类中心
+    // 步骤1: 随机选择初始聚类中心
     vector<vector<float>> centers(k);
     for (int i = 0; i < k; ++i)
-        centers[i] = data[distrib(gen)];
+        centers[i] = data[distrib(gen)];  // 从数据中随机选择k个点作为初始中心
 
-    vector<int> assignments(n);  // 存储每个点的簇分配结果
-    
+    vector<int> assignments(n);  // 存储每个数据点的簇分配结果
+
     // 迭代优化过程
     for (int iter = 0; iter < max_iters; ++iter) {
         bool changed = false;  // 标记分配是否发生变化
-        
-        // 分配阶段：将每个点分配到最近的簇
+
+        // 步骤2: 分配阶段 - 将每个点分配到最近的簇
         for (int i = 0; i < n; ++i) {
             float min_dist = numeric_limits<float>::max();
             int best_c = 0;
+            // 遍历所有簇中心，寻找最近的中心
             for (int c = 0; c < k; ++c) {
                 float dist = squared_euclidean_distance(data[i], centers[c]);
                 if (dist < min_dist) {
@@ -55,24 +57,27 @@ KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters = 1
                     best_c = c;
                 }
             }
+            // 如果分配结果发生变化，更新并标记changed
             if (assignments[i] != best_c) {
                 assignments[i] = best_c;
                 changed = true;
             }
         }
-        if (!changed) break;  // 提前终止如果分配不再变化
+        if (!changed) break;  // 提前终止：如果分配不再变化
 
-        // 更新阶段：重新计算聚类中心
+        // 步骤3: 更新阶段 - 重新计算簇中心
         vector<vector<float>> new_centers(k, vector<float>(dim, 0));
-        vector<int> counts(k, 0);
-        // 累加各簇数据点坐标
+        vector<int> counts(k, 0);  // 记录每个簇包含的点数
+
+        // 累加各簇数据点的坐标
         for (int i = 0; i < n; ++i) {
             int c = assignments[i];
             for (int d = 0; d < dim; ++d)
                 new_centers[c][d] += data[i][d];
             counts[c]++;
         }
-        // 计算均值得到新中心
+
+        // 计算各簇坐标的平均值（即新簇中心）
         for (int c = 0; c < k; ++c) {
             if (counts[c] == 0) continue;  // 处理空簇情况
             for (int d = 0; d < dim; ++d)
@@ -83,24 +88,24 @@ KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters = 1
     return { centers, assignments };
 }
 
-// 乘积量化类实现
+///乘积量化类
 class ProductQuantization {
 private:
     int d;          // 原始向量维度
-    int m;          // 子空间数量
+    int m;          // 子空间划分数量
     int k;          // 每个子空间的聚类中心数
     int sub_dim;    // 每个子空间的维度（d/m）
-    
-    vector<KMeansResult> cluster_results;  // 每个子空间的聚类结果
-    vector<vector<int>> codebook_A;         // 编码簿A：各子空间的簇分配
+
+    vector<KMeansResult> cluster_results;  // 各子空间的聚类结果
+    vector<vector<int>> codebook_A;        // 编码簿A（各子空间的簇分配）
     vector<vector<vector<float>>> distance_tables_B;  // 预计算的子空间距离表
 
-    // 将数据划分到m个子空间
+    ///将原始数据分割到各子空间
     vector<vector<vector<float>>> split_into_subspaces(const vector<vector<float>>& data) {
         vector<vector<vector<float>>> subspaces(m);
         for (const auto& point : data) {
             for (int i = 0; i < m; ++i) {
-                // 每个子空间取连续sub_dim维度
+                // 从原始向量中截取子空间对应的维度段
                 int start = i * sub_dim;
                 vector<float> sub_point(point.begin() + start, point.begin() + start + sub_dim);
                 subspaces[i].push_back(sub_point);
@@ -109,7 +114,7 @@ private:
         return subspaces;
     }
 
-    // 构建编码簿A：每个子空间的簇分配结果
+    ///构建编码簿A
     vector<vector<int>> build_codebook_A(const vector<KMeansResult>& results) {
         int n = results[0].assignments.size();
         vector<vector<int>> A(m, vector<int>(n));
@@ -118,14 +123,14 @@ private:
         return A;
     }
 
-    // 预计算所有子空间的中心点之间的距离表
+    ///预计算各子空间的簇间距离表，返回三维向量，结构为[m][k][k]，存储各子空间的簇间平方距离
     vector<vector<vector<float>>> precompute_distance_tables() {
         vector<vector<vector<float>>> tables(m);
         for (int i = 0; i < m; ++i) {
             auto& centers = cluster_results[i].centers;
             int k = centers.size();
             tables[i].resize(k, vector<float>(k));
-            // 计算所有中心对之间的距离
+            // 计算当前子空间所有簇对之间的距离
             for (int j = 0; j < k; ++j)
                 for (int l = 0; l < k; ++l)
                     tables[i][j][l] = squared_euclidean_distance(centers[j], centers[l]);
@@ -135,33 +140,32 @@ private:
 
 public:
     ProductQuantization(int d, int m, int k) : d(d), m(m), k(k) {
-        assert(d % m == 0);
-        sub_dim = d / m;  // 计算子空间维度
+        assert(d % m == 0);    // 确保维度能被均匀划分
+        sub_dim = d / m;       // 计算子空间维度
     }
-
-    // 训练乘积量化模型
+    ///训练乘积量化模型
     void train(const vector<vector<float>>& data) {
-        // 1. 将数据划分到m个子空间
+        // 步骤1: 数据划分到子空间
         auto subspaces = split_into_subspaces(data);
+
+        // 步骤2: 对各子空间独立进行聚类
         cluster_results.resize(m);
-        
-        // 2. 对每个子空间进行独立聚类
         for (int i = 0; i < m; ++i)
             cluster_results[i] = k_means(subspaces[i], k);
-        
-        // 3. 构建编码簿和预计算距离表
+
+        // 步骤3: 构建编码簿和预计算距离表
         codebook_A = build_codebook_A(cluster_results);
         distance_tables_B = precompute_distance_tables();
     }
 
-    // 查询最近邻
+    ///执行近似最近邻搜索
     pair<int, float> query(const vector<float>& q) {
-        // 1. 将查询向量划分到子空间
+        // 步骤1: 划分查询向量到各子空间
         vector<vector<float>> q_sub(m, vector<float>(sub_dim));
         for (int i = 0; i < m; ++i)
             copy(q.begin() + i * sub_dim, q.begin() + (i + 1) * sub_dim, q_sub[i].begin());
 
-        // 2. 找到每个子空间最近的簇中心（构建b）
+        // 步骤2: 在各子空间中找到最近的簇中心（构建b）
         vector<int> b_indices(m);
         for (int i = 0; i < m; ++i) {
             float min_dist = numeric_limits<float>::max();
@@ -169,20 +173,24 @@ public:
                 float dist = squared_euclidean_distance(q_sub[i], cluster_results[i].centers[c]);
                 if (dist < min_dist) {
                     min_dist = dist;
-                    b_indices[i] = c;
+                    b_indices[i] = c;  // 记录当前子空间最近的簇索引
                 }
             }
         }
 
-        // 3. 在所有数据点中查找最小距离组合
-        int n = codebook_A[0].size();
+        // 步骤3: 线性扫描所有数据点，计算近似距离
+        int n = codebook_A[0].size();  // 数据点总数
         float min_total = numeric_limits<float>::max();
         int best_idx = -1;
+
         for (int x = 0; x < n; ++x) {
             float total = 0;
-            // 累加各子空间预计算的距离
-            for (int i = 0; i < m; ++i)
+            // 累加各子空间的距离表查询结果
+            for (int i = 0; i < m; ++i) {
+                // codebook_A[i][x] 表示数据点x在第i子空间的簇索引
+                // b_indices[i] 表示查询向量在第i子空间的最近簇索引
                 total += distance_tables_B[i][codebook_A[i][x]][b_indices[i]];
+            }
             if (total < min_total) {
                 min_total = total;
                 best_idx = x;
@@ -190,4 +198,60 @@ public:
         }
         return { best_idx, min_total };
     }
+
+    void print_cluster_centers() {
+        cout << "==== Cluster Centers ====\n";
+        for (int i = 0; i < m; ++i) {
+            cout << "Subspace " << i << ":\n";
+            for (const auto& center : cluster_results[i].centers) {
+                cout << "  Center [";
+                for (float val : center) cout << val << " ";
+                cout << "]\n";
+            }
+        }
+    }
+
+    void print_codebook() {
+        cout << "\n==== Codebook A ====\n";
+        for (int i = 0; i < m; ++i) {
+            cout << "Subspace " << i << ": [";
+            for (int idx : codebook_A[i]) cout << idx << " ";
+            cout << "]\n";
+        }
+    }
 };
+
+
+int main() {
+    const int D = 4;   // 原始维度
+    const int M = 2;   // 子空间数量
+    const int K = 2;   // 每个子空间的聚类数
+
+    // 测试数据（包含3个4维向量）
+    vector<vector<float>> train_data = {
+        {1.1, 2.1, 3.1, 4.1},  // 数据点0（前两个维度相近）
+        {1.2, 2.2, 3.2, 4.2},  // 数据点1（前两个维度相近）
+        {9.9, 8.8, 7.7, 6.6}   // 数据点2（明显不同的异常点）
+    };
+
+    // 初始化乘积量化器
+    ProductQuantization pq(D, M, K);
+
+    // 训练模型
+    pq.train(train_data);
+
+    // 输出训练结果
+    pq.print_cluster_centers();
+    pq.print_codebook();
+
+    // 执行查询（接近前两个数据点）
+    vector<float> query_vec = { 1.0, 2.0, 3.0, 4.0 };
+    auto [best_idx, min_dist] = pq.query(query_vec);
+
+    // 输出查询结果
+    cout << "\n==== Query Result ====\n";
+    cout << "Nearest Neighbor Index: " << best_idx << endl;
+    cout << "Approximate Distance: " << min_dist << endl;
+
+    return 0;
+}
