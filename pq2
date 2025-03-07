@@ -7,34 +7,44 @@
 
 using namespace std;
 
+// 保存K-means聚类结果的结构体
 struct KMeansResult {
-    vector<vector<float>> centers;
-    vector<int> assignments;
+    vector<vector<float>> centers;  // 聚类中心坐标
+    vector<int> assignments;       // 每个数据点所属的簇索引
 };
 
+// 计算两个向量的平方欧氏距离
 float squared_euclidean_distance(const vector<float>& a, const vector<float>& b) {
     float sum = 0.0f;
     for (size_t i = 0; i < a.size(); ++i) {
         float diff = a[i] - b[i];
-        sum += diff * diff;
+        sum += diff * diff;  // 平方差累加
     }
     return sum;
 }
 
-KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters=100) {
-    int n = data.size();
-    int dim = data[0].size();
+// K-means聚类算法实现
+KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters = 100) {
+    int n = data.size();      // 数据点总数
+    int dim = data[0].size(); // 数据维度
+    
+    // 随机数生成器初始化
     random_device rd;
     mt19937 gen(rd());
-    uniform_int_distribution<> distrib(0, n-1);
+    uniform_int_distribution<> distrib(0, n - 1);
 
+    // 随机初始化聚类中心
     vector<vector<float>> centers(k);
     for (int i = 0; i < k; ++i)
         centers[i] = data[distrib(gen)];
 
-    vector<int> assignments(n);
+    vector<int> assignments(n);  // 存储每个点的簇分配结果
+    
+    // 迭代优化过程
     for (int iter = 0; iter < max_iters; ++iter) {
-        bool changed = false;
+        bool changed = false;  // 标记分配是否发生变化
+        
+        // 分配阶段：将每个点分配到最近的簇
         for (int i = 0; i < n; ++i) {
             float min_dist = numeric_limits<float>::max();
             int best_c = 0;
@@ -50,37 +60,47 @@ KMeansResult k_means(const vector<vector<float>>& data, int k, int max_iters=100
                 changed = true;
             }
         }
-        if (!changed) break;
+        if (!changed) break;  // 提前终止如果分配不再变化
 
+        // 更新阶段：重新计算聚类中心
         vector<vector<float>> new_centers(k, vector<float>(dim, 0));
         vector<int> counts(k, 0);
+        // 累加各簇数据点坐标
         for (int i = 0; i < n; ++i) {
             int c = assignments[i];
             for (int d = 0; d < dim; ++d)
                 new_centers[c][d] += data[i][d];
             counts[c]++;
         }
+        // 计算均值得到新中心
         for (int c = 0; c < k; ++c) {
-            if (counts[c] == 0) continue;
+            if (counts[c] == 0) continue;  // 处理空簇情况
             for (int d = 0; d < dim; ++d)
                 new_centers[c][d] /= counts[c];
         }
         centers = new_centers;
     }
-    return {centers, assignments};
+    return { centers, assignments };
 }
 
+// 乘积量化类实现
 class ProductQuantization {
 private:
-    int d, m, k, sub_dim;
-    vector<KMeansResult> cluster_results;
-    vector<vector<int>> codebook_A;
-    vector<vector<vector<float>>> distance_tables_B;
+    int d;          // 原始向量维度
+    int m;          // 子空间数量
+    int k;          // 每个子空间的聚类中心数
+    int sub_dim;    // 每个子空间的维度（d/m）
+    
+    vector<KMeansResult> cluster_results;  // 每个子空间的聚类结果
+    vector<vector<int>> codebook_A;         // 编码簿A：各子空间的簇分配
+    vector<vector<vector<float>>> distance_tables_B;  // 预计算的子空间距离表
 
+    // 将数据划分到m个子空间
     vector<vector<vector<float>>> split_into_subspaces(const vector<vector<float>>& data) {
         vector<vector<vector<float>>> subspaces(m);
         for (const auto& point : data) {
             for (int i = 0; i < m; ++i) {
+                // 每个子空间取连续sub_dim维度
                 int start = i * sub_dim;
                 vector<float> sub_point(point.begin() + start, point.begin() + start + sub_dim);
                 subspaces[i].push_back(sub_point);
@@ -89,6 +109,7 @@ private:
         return subspaces;
     }
 
+    // 构建编码簿A：每个子空间的簇分配结果
     vector<vector<int>> build_codebook_A(const vector<KMeansResult>& results) {
         int n = results[0].assignments.size();
         vector<vector<int>> A(m, vector<int>(n));
@@ -97,12 +118,14 @@ private:
         return A;
     }
 
+    // 预计算所有子空间的中心点之间的距离表
     vector<vector<vector<float>>> precompute_distance_tables() {
         vector<vector<vector<float>>> tables(m);
         for (int i = 0; i < m; ++i) {
             auto& centers = cluster_results[i].centers;
             int k = centers.size();
             tables[i].resize(k, vector<float>(k));
+            // 计算所有中心对之间的距离
             for (int j = 0; j < k; ++j)
                 for (int l = 0; l < k; ++l)
                     tables[i][j][l] = squared_euclidean_distance(centers[j], centers[l]);
@@ -113,23 +136,32 @@ private:
 public:
     ProductQuantization(int d, int m, int k) : d(d), m(m), k(k) {
         assert(d % m == 0);
-        sub_dim = d / m;
+        sub_dim = d / m;  // 计算子空间维度
     }
 
+    // 训练乘积量化模型
     void train(const vector<vector<float>>& data) {
+        // 1. 将数据划分到m个子空间
         auto subspaces = split_into_subspaces(data);
         cluster_results.resize(m);
+        
+        // 2. 对每个子空间进行独立聚类
         for (int i = 0; i < m; ++i)
             cluster_results[i] = k_means(subspaces[i], k);
+        
+        // 3. 构建编码簿和预计算距离表
         codebook_A = build_codebook_A(cluster_results);
         distance_tables_B = precompute_distance_tables();
     }
 
+    // 查询最近邻
     pair<int, float> query(const vector<float>& q) {
+        // 1. 将查询向量划分到子空间
         vector<vector<float>> q_sub(m, vector<float>(sub_dim));
         for (int i = 0; i < m; ++i)
-            copy(q.begin() + i*sub_dim, q.begin() + (i+1)*sub_dim, q_sub[i].begin());
+            copy(q.begin() + i * sub_dim, q.begin() + (i + 1) * sub_dim, q_sub[i].begin());
 
+        // 2. 找到每个子空间最近的簇中心（构建b）
         vector<int> b_indices(m);
         for (int i = 0; i < m; ++i) {
             float min_dist = numeric_limits<float>::max();
@@ -142,11 +174,13 @@ public:
             }
         }
 
+        // 3. 在所有数据点中查找最小距离组合
         int n = codebook_A[0].size();
         float min_total = numeric_limits<float>::max();
         int best_idx = -1;
         for (int x = 0; x < n; ++x) {
             float total = 0;
+            // 累加各子空间预计算的距离
             for (int i = 0; i < m; ++i)
                 total += distance_tables_B[i][codebook_A[i][x]][b_indices[i]];
             if (total < min_total) {
@@ -154,6 +188,6 @@ public:
                 best_idx = x;
             }
         }
-        return {best_idx, min_total};
+        return { best_idx, min_total };
     }
 };
