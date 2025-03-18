@@ -14,7 +14,7 @@ int main() {
         // 训练PQ模型
         PQ pq_engine;
         std::vector<Eigen::VectorXf> item_vectors;
-        for (const auto& vec : user_item_matrix) {
+        for (const auto & vec : user_item_matrix) {
             item_vectors.emplace_back(Eigen::Map<const Eigen::VectorXf>(vec.data(), vec.size()));
         }
         pq_engine.train(item_vectors);
