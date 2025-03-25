@@ -1,0 +1,177 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <map>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+// 电影数据结构
+struct Movie {
+    int id;
+    string title;
+    vector<string> genres;
+};
+
+// 全局数据结构
+map<int, Movie> movies;                      // 电影ID到电影数据的映射
+map<int, map<int, double>> userRatings;      // 用户ID到（电影ID，评分）的映射
+map<int, map<int, double>> itemRatings;      // 电影ID到（用户ID，评分）的映射
+map<int, map<int, double>> similarityMatrix; // 物品相似度矩阵（稀疏存储）
+vector<string> split(const string& s, const string& delim) {
+    vector<string> parts;
+    size_t pos = 0;
+    while (true) {
+        size_t found = s.find(delim, pos);
+        if (found == string::npos) {
+            parts.push_back(s.substr(pos));
+            break;
+        }
+        parts.push_back(s.substr(pos, found - pos));
+        pos = found + delim.size();
+    }
+    return parts;
+}
+
+void loadMovies(const string& filename) {
+    ifstream file(filename);
+    string line;
+    while (getline(file, line)) {
+        vector<string> parts = split(line, "::");
+        if (parts.size() < 3) continue;
+
+        Movie m;
+        m.id = stoi(parts[0]);
+        m.title = parts[1];
+
+        vector<string> genres = split(parts[2], "|");
+        m.genres = genres;
+
+        movies[m.id] = m;
+    }
+}
+
+void loadRatings(const string& filename) {
+    ifstream file(filename);
+    string line;
+    while (getline(file, line)) {
+        vector<string> parts = split(line, "::");
+        if (parts.size() < 4) continue;
+
+        int userId = stoi(parts[0]);
+        int movieId = stoi(parts[1]);
+        double rating = stod(parts[2]);
+
+        userRatings[userId][movieId] = rating;
+        itemRatings[movieId][userId] = rating;
+    }
+}
+double cosineSimilarity(const map<int, double>& ratings1,
+    const map<int, double>& ratings2) {
+    double dotProduct = 0, magnitude1 = 0, magnitude2 = 0;
+
+    // 查找共同用户
+    for (const auto& [user, r1] : ratings1) {
+        if (ratings2.count(user)) {
+            double r2 = ratings2.at(user);
+            dotProduct += r1 * r2;
+            magnitude1 += r1 * r1;
+            magnitude2 += r2 * r2;
+        }
+    }
+
+    if (magnitude1 == 0 || magnitude2 == 0) return 0;
+    return dotProduct / (sqrt(magnitude1) * sqrt(magnitude2));
+}
+
+void calculateSimilarities(int targetMovie, int topN) {
+    const auto& targetRatings = itemRatings[targetMovie];
+
+    vector<pair<int, double>> similarities;
+
+    for (const auto& [movieId, ratings] : itemRatings) {
+        if (movieId == targetMovie) continue;
+        double sim = cosineSimilarity(targetRatings, ratings);
+        if (sim > 0) {
+            similarities.emplace_back(movieId, sim);
+        }
+    }
+
+    // 按相似度排序并取前topN
+    sort(similarities.begin(), similarities.end(),
+        [](auto& a, auto& b) { return a.second > b.second; });
+
+    if (similarities.size() > topN) {
+        similarities.resize(topN);
+    }
+
+    // 存储到相似度矩阵
+    for (auto& [movieId, sim] : similarities) {
+        similarityMatrix[targetMovie][movieId] = sim;
+    }
+}
+double predictRating(int userId, int movieId, int topN = 20) {
+    if (!userRatings.count(userId) || !itemRatings.count(movieId)) {
+        return 0.0; // 无足够数据
+    }
+
+    // 确保已计算相似度
+    if (similarityMatrix[movieId].empty()) {
+        calculateSimilarities(movieId, topN);
+    }
+
+    const auto& userMovies = userRatings[userId];
+    double weightedSum = 0.0;
+    double totalSimilarity = 0.0;
+
+    for (const auto& [similarMovie, sim] : similarityMatrix[movieId]) {
+        if (userMovies.count(similarMovie)) {
+            weightedSum += userMovies.at(similarMovie) * sim;
+            totalSimilarity += abs(sim);
+        }
+    }
+
+    if (totalSimilarity == 0) return 0.0;
+    return weightedSum / totalSimilarity;
+}
+vector<pair<int, double>> generateRecommendations(int userId, int topK = 10) {
+    map<int, double> predictions;
+
+    // 遍历所有电影
+    for (const auto& [movieId, _] : movies) {
+        // 跳过已评分的电影
+        if (userRatings[userId].count(movieId)) continue;
+
+        double pred = predictRating(userId, movieId);
+        if (pred > 0) {
+            predictions[movieId] = pred;
+        }
+    }
+
+    // 转换为排序后的向量
+    vector<pair<int, double>> results(predictions.begin(), predictions.end());
+    sort(results.begin(), results.end(),
+        [](auto& a, auto& b) { return a.second > b.second; });
+
+    if (results.size() > topK) results.resize(topK);
+    return results;
+}
+int main() {
+    // 加载数据
+    loadMovies("movies.dat");
+    loadRatings("ratings.dat");
+
+    // 示例：为用户1生成推荐
+    int targetUser = 1;
+    auto recommendations = generateRecommendations(targetUser);
+
+    // 输出推荐结果
+    cout << "Top 10 recommendations for user " << targetUser << ":\n";
+    for (const auto& [movieId, score] : recommendations) {
+        cout << movies[movieId].title << " (Score: " << score << ")\n";
+    }
+
+    return 0;
+}
