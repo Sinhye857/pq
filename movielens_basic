@@ -2,176 +2,309 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <map>
-#include <cmath>
+#include <unordered_map>
+#include <unordered_set>
+#include <sstream>
 #include <algorithm>
+#include <cmath>
+#include <cctype>
+#include <chrono>
+#include <iomanip>
 
 using namespace std;
+using namespace std::chrono;
 
-// 电影数据结构
+// 数据结构定义
 struct Movie {
     int id;
     string title;
     vector<string> genres;
 };
 
-// 全局数据结构
-map<int, Movie> movies;                      // 电影ID到电影数据的映射
-map<int, map<int, double>> userRatings;      // 用户ID到（电影ID，评分）的映射
-map<int, map<int, double>> itemRatings;      // 电影ID到（用户ID，评分）的映射
-map<int, map<int, double>> similarityMatrix; // 物品相似度矩阵（稀疏存储）
-vector<string> split(const string& s, const string& delim) {
-    vector<string> parts;
-    size_t pos = 0;
-    while (true) {
-        size_t found = s.find(delim, pos);
-        if (found == string::npos) {
-            parts.push_back(s.substr(pos));
-            break;
-        }
-        parts.push_back(s.substr(pos, found - pos));
-        pos = found + delim.size();
-    }
-    return parts;
-}
+struct User {
+    int id;
+    unordered_map<int, double> ratings;       // 电影ID -> 评分
+    unordered_map<string, int> tags;          // 标签 -> 使用次数
+    unordered_map<string, double> genre_prefs;// 类型偏好
+    double avg_rating = 0;                    // 平均评分
+};
 
-void loadMovies(const string& filename) {
-    ifstream file(filename);
+// 复杂度分析结构体
+struct Complexity {
+    int user_count = 0;
+    int movie_count = 0;
+    int rating_count = 0;
+    int tag_count = 0;
+    double load_time = 0;
+    double recommend_time = 0;
+};
+
+// 工具函数
+vector<string> read_lines(const string& path) {
+    vector<string> lines;
+    ifstream file(path);
+    if (!file.is_open()) {
+        cerr << "Error opening file: " << path << endl;
+        return lines;
+    }
     string line;
     while (getline(file, line)) {
-        vector<string> parts = split(line, "::");
+        if (!line.empty()) lines.push_back(line);
+    }
+    return lines;
+}
+
+vector<string> split(const string& s, const string& delim) {
+    vector<string> tokens;
+    size_t pos = 0, delim_len = delim.length();
+    while (pos < s.length()) {
+        size_t found = s.find(delim, pos);
+        if (found == string::npos) found = s.length();
+        tokens.push_back(s.substr(pos, found - pos));
+        pos = found + delim_len;
+    }
+    return tokens;
+}
+
+// 数据加载函数
+unordered_map<int, Movie> load_movies(const string& path, Complexity& analysis) {
+    auto start = high_resolution_clock::now();
+    unordered_map<int, Movie> movies;
+
+    for (const string& line : read_lines(path)) {
+        auto parts = split(line, "::");
         if (parts.size() < 3) continue;
 
         Movie m;
         m.id = stoi(parts[0]);
         m.title = parts[1];
-
-        vector<string> genres = split(parts[2], "|");
-        m.genres = genres;
+        m.genres = split(parts[2], "|");
 
         movies[m.id] = m;
+        analysis.movie_count++;
     }
+
+    auto end = high_resolution_clock::now();
+    analysis.load_time += duration_cast<milliseconds>(end - start).count() / 1000.0;
+    return movies;
 }
 
-void loadRatings(const string& filename) {
-    ifstream file(filename);
-    string line;
-    while (getline(file, line)) {
-        vector<string> parts = split(line, "::");
+void load_ratings(const string& path,
+    unordered_map<int, User>& users,
+    unordered_map<int, vector<int>>& movie_users,
+    const unordered_map<int, Movie>& movies,
+    Complexity& analysis) {
+
+    auto start = high_resolution_clock::now();
+
+    for (const string& line : read_lines(path)) {
+        analysis.rating_count++;
+        auto parts = split(line, "::");
         if (parts.size() < 4) continue;
 
-        int userId = stoi(parts[0]);
-        int movieId = stoi(parts[1]);
+        int uid = stoi(parts[0]);
+        int mid = stoi(parts[1]);
         double rating = stod(parts[2]);
 
-        userRatings[userId][movieId] = rating;
-        itemRatings[movieId][userId] = rating;
+        users[uid].id = uid;
+        users[uid].ratings[mid] = rating;
+        movie_users[mid].push_back(uid);
     }
-}
-double cosineSimilarity(const map<int, double>& ratings1,
-    const map<int, double>& ratings2) {
-    double dotProduct = 0, magnitude1 = 0, magnitude2 = 0;
 
-    // 查找共同用户
-    for (const auto& [user, r1] : ratings1) {
-        if (ratings2.count(user)) {
-            double r2 = ratings2.at(user);
-            dotProduct += r1 * r2;
-            magnitude1 += r1 * r1;
-            magnitude2 += r2 * r2;
+    // 计算用户特征
+    for (auto& [uid, user] : users) {
+        double total = 0;
+        unordered_map<string, double> genre_sum;
+        unordered_map<string, int> genre_cnt;
+
+        for (const auto& [mid, rating] : user.ratings) {
+            total += rating;
+            if (movies.count(mid)) {
+                for (const string& g : movies.at(mid).genres) {
+                    genre_sum[g] += rating;
+                    genre_cnt[g]++;
+                }
+            }
+        }
+
+        user.avg_rating = total / user.ratings.size();
+        for (const auto& [g, cnt] : genre_cnt) {
+            user.genre_prefs[g] = genre_sum[g] / cnt;
         }
     }
 
-    if (magnitude1 == 0 || magnitude2 == 0) return 0;
-    return dotProduct / (sqrt(magnitude1) * sqrt(magnitude2));
+    auto end = high_resolution_clock::now();
+    analysis.load_time += duration_cast<milliseconds>(end - start).count() / 1000.0;
+    analysis.user_count = users.size();
 }
 
-void calculateSimilarities(int targetMovie, int topN) {
-    const auto& targetRatings = itemRatings[targetMovie];
+void load_tags(const string& path, unordered_map<int, User>& users, Complexity& analysis) {
+    auto start = high_resolution_clock::now();
 
-    vector<pair<int, double>> similarities;
+    for (const string& line : read_lines(path)) {
+        analysis.tag_count++;
+        auto parts = split(line, "::");
+        if (parts.size() < 4) continue;
 
-    for (const auto& [movieId, ratings] : itemRatings) {
-        if (movieId == targetMovie) continue;
-        double sim = cosineSimilarity(targetRatings, ratings);
-        if (sim > 0) {
-            similarities.emplace_back(movieId, sim);
+        int uid = stoi(parts[0]);
+        string tag = parts[2];
+
+        transform(tag.begin(), tag.end(), tag.begin(), ::tolower);
+        users[uid].tags[tag]++;
+    }
+
+    auto end = high_resolution_clock::now();
+    analysis.load_time += duration_cast<milliseconds>(end - start).count() / 1000.0;
+}
+
+// 相似度计算
+double cosine_sim(const unordered_map<string, double>& v1,
+    const unordered_map<string, double>& v2) {
+    double dot = 0, norm1 = 0, norm2 = 0;
+    for (const auto& [k, v] : v1) {
+        if (v2.count(k)) dot += v * v2.at(k);
+        norm1 += v * v;
+    }
+    for (const auto& [k, v] : v2) norm2 += v * v;
+
+    if (norm1 == 0 || norm2 == 0) return 0;
+    return dot / (sqrt(norm1) * sqrt(norm2));
+}
+
+double user_similarity(const User& u1, const User& u2) {
+    // 评分相似度
+    vector<int> common;
+    for (const auto& [mid, _] : u1.ratings) {
+        if (u2.ratings.count(mid)) common.push_back(mid);
+    }
+
+    double score_sim = 0;
+    if (!common.empty()) {
+        double num = 0, den1 = 0, den2 = 0;
+        for (int mid : common) {
+            double diff1 = u1.ratings.at(mid) - u1.avg_rating;
+            double diff2 = u2.ratings.at(mid) - u2.avg_rating;
+            num += diff1 * diff2;
+            den1 += diff1 * diff1;
+            den2 += diff2 * diff2;
         }
+        if (den1 * den2 != 0)
+            score_sim = num / (sqrt(den1) * sqrt(den2));
     }
 
-    // 按相似度排序并取前topN
-    sort(similarities.begin(), similarities.end(),
-        [](auto& a, auto& b) { return a.second > b.second; });
-
-    if (similarities.size() > topN) {
-        similarities.resize(topN);
-    }
-
-    // 存储到相似度矩阵
-    for (auto& [movieId, sim] : similarities) {
-        similarityMatrix[targetMovie][movieId] = sim;
-    }
+    // 综合相似度（评分40% + 类型30% + 标签30%）
+    return 0.4 * score_sim +
+        0.3 * cosine_sim(u1.genre_prefs, u2.genre_prefs) +
+        0.3 * cosine_sim({ {"tag_placeholder", 1} }, u2.genre_prefs); // 简化的标签处理
 }
-double predictRating(int userId, int movieId, int topN = 20) {
-    if (!userRatings.count(userId) || !itemRatings.count(movieId)) {
-        return 0.0; // 无足够数据
+
+// 推荐生成
+vector<pair<int, double>> generate_recommendations(int uid,
+    const unordered_map<int, User>& users,
+    const unordered_map<int, vector<int>>& movie_users,
+    const unordered_map<int, Movie>& movies,
+    Complexity& analysis) {
+    auto start = high_resolution_clock::now();
+    vector<pair<int, double>> recommendations;
+
+    const User& target = users.at(uid);
+    unordered_set<int> rated;
+    for (const auto& [mid, _] : target.ratings) {
+        rated.insert(mid);
     }
 
-    // 确保已计算相似度
-    if (similarityMatrix[movieId].empty()) {
-        calculateSimilarities(movieId, topN);
-    }
+    for (const auto& [mid, movie] : movies) {
+        if (rated.count(mid)) continue;
 
-    const auto& userMovies = userRatings[userId];
-    double weightedSum = 0.0;
-    double totalSimilarity = 0.0;
+        double sum_sim = 0, weighted_sum = 0;
+        if (movie_users.count(mid)) {
+            for (int other_uid : movie_users.at(mid)) {
+                if (other_uid == uid) continue;
 
-    for (const auto& [similarMovie, sim] : similarityMatrix[movieId]) {
-        if (userMovies.count(similarMovie)) {
-            weightedSum += userMovies.at(similarMovie) * sim;
-            totalSimilarity += abs(sim);
+                const User& other = users.at(other_uid);
+                double sim = user_similarity(target, other);
+                if (sim > 0) {
+                    double diff = other.ratings.at(mid) - other.avg_rating;
+                    weighted_sum += sim * diff;
+                    sum_sim += sim;
+                }
+            }
         }
+
+        double pred = sum_sim ? target.avg_rating + (weighted_sum / sum_sim) : 0;
+        recommendations.emplace_back(mid, pred);
     }
 
-    if (totalSimilarity == 0) return 0.0;
-    return weightedSum / totalSimilarity;
+    sort(recommendations.begin(), recommendations.end(),
+        [](const pair<int, double>& a, const pair<int, double>& b) {
+            return a.second > b.second;
+        });
+
+    auto end = high_resolution_clock::now();
+    analysis.recommend_time = duration_cast<milliseconds>(end - start).count() / 1000.0;
+
+    return vector(recommendations.begin(), recommendations.begin() + min(10, (int)recommendations.size()));
 }
-vector<pair<int, double>> generateRecommendations(int userId, int topK = 10) {
-    map<int, double> predictions;
 
-    // 遍历所有电影
-    for (const auto& [movieId, _] : movies) {
-        // 跳过已评分的电影
-        if (userRatings[userId].count(movieId)) continue;
+// 复杂度分析输出
+void print_complexity(const Complexity& analysis) {
+    cout << "\n=== 复杂度分析 ===" << endl;
+    cout << "数据统计:" << endl;
+    cout << "用户数: " << analysis.user_count << endl;
+    cout << "电影数: " << analysis.movie_count << endl;
+    cout << "评分记录数: " << analysis.rating_count << endl;
+    cout << "标签数: " << analysis.tag_count << endl;
 
-        double pred = predictRating(userId, movieId);
-        if (pred > 0) {
-            predictions[movieId] = pred;
-        }
-    }
+    cout << "\n理论复杂度:" << endl;
+    cout << "数据加载: O(R + T) = " << analysis.rating_count + analysis.tag_count << endl;
+    cout << "推荐生成: O(M*U) = " << analysis.movie_count * analysis.user_count << endl;
 
-    // 转换为排序后的向量
-    vector<pair<int, double>> results(predictions.begin(), predictions.end());
-    sort(results.begin(), results.end(),
-        [](auto& a, auto& b) { return a.second > b.second; });
-
-    if (results.size() > topK) results.resize(topK);
-    return results;
+    cout << "\n实际耗时:" << endl;
+    cout << "数据加载耗时: " << analysis.load_time << "秒" << endl;
+    cout << "推荐生成耗时: " << analysis.recommend_time << "秒" << endl;
 }
+
 int main() {
+    Complexity analysis;
+    auto total_start = high_resolution_clock::now();
+
     // 加载数据
-    loadMovies("movies.dat");
-    loadRatings("ratings.dat");
+    auto movies = load_movies("movies.dat", analysis);
+    unordered_map<int, User> users;
+    unordered_map<int, vector<int>> movie_users;
 
-    // 示例：为用户1生成推荐
-    int targetUser = 1;
-    auto recommendations = generateRecommendations(targetUser);
-
-    // 输出推荐结果
-    cout << "Top 10 recommendations for user " << targetUser << ":\n";
-    for (const auto& [movieId, score] : recommendations) {
-        cout << movies[movieId].title << " (Score: " << score << ")\n";
+    try {
+        load_ratings("ratings.dat", users, movie_users, movies, analysis);
+        load_tags("tags.dat", users, analysis);
     }
+    catch (const exception& e) {
+        cerr << "数据加载错误: " << e.what() << endl;
+        return 1;
+    }
+
+    // 生成推荐
+    if (!users.empty()) {
+        int target_user = users.begin()->first;
+        cout << "\n正在为用户 " << target_user << " 生成推荐..." << endl;
+
+        auto recommendations = generate_recommendations(target_user, users, movie_users, movies, analysis);
+
+        cout << "\n用户 " << target_user << " 的TOP10推荐:" << endl;
+        for (const auto& [mid, score] : recommendations) {
+            cout << " 电影ID: " << mid
+                << " | 片名: " << movies.at(mid).title
+                << " | 预测评分: " << fixed << setprecision(1) << score << endl;
+        }
+    }
+    else {
+        cout << "警告: 未找到有效用户数据" << endl;
+    }
+
+    // 输出分析结果
+    print_complexity(analysis);
+    cout << "\n总执行时间: "
+        << duration_cast<milliseconds>(high_resolution_clock::now() - total_start).count() / 1000.0
+        << "秒" << endl;
 
     return 0;
 }
