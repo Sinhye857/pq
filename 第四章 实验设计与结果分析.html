@@ -1,0 +1,313 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>第四章 实验设计与结果分析</title><link href='https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; bottom: 0px; top: 0px; left: 0px; right: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; word-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 40px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:first-child { margin-top: -20px; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; }
+button, input, select, textarea { color: inherit; font-style: inherit; font-variant: inherit; font-weight: inherit; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 2; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px !important; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-diagram-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  html.blink-to-pdf { font-size: 13px; }
+  .typora-export #write { padding-left: 32px; padding-right: 32px; padding-bottom: 0px; break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  @page { margin: 20mm 0px; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.8; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.md-inline-math .MathJax_SVG .noError { display: none !important; }
+.html-for-mac .inline-math-svg .MathJax_SVG { vertical-align: 0.2px; }
+.md-math-block .MathJax_SVG_Display { text-align: center; margin: 0px; position: relative; text-indent: 0px; max-width: none; max-height: none; min-height: 0px; min-width: 100%; width: auto; overflow-y: hidden; display: block !important; }
+.MathJax_SVG_Display, .md-inline-math .MathJax_SVG_Display { width: auto; margin: inherit; display: inline-block !important; }
+.MathJax_SVG .MJX-monospace { font-family: var(--monospace); }
+.MathJax_SVG .MJX-sans-serif { font-family: sans-serif; }
+.MathJax_SVG { display: inline; font-style: normal; font-weight: 400; line-height: normal; zoom: 90%; text-indent: 0px; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0px; min-height: 0px; border: 0px; padding: 0px; margin: 0px; }
+.MathJax_SVG * { transition: none; }
+.MathJax_SVG_Display svg { vertical-align: middle !important; margin-bottom: 0px !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="mermaid"] svg, [lang="flow"] svg { max-width: 100%; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow-y: hidden; overflow-x: auto; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 30px; z-index: 3; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; word-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { word-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; left: 0px; right: 0px; top: 0px; bottom: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+:root { --side-bar-bg-color: #fafafa; --control-text-color: #777; }
+html { font-size: 16px; }
+body { font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; color: rgb(51, 51, 51); line-height: 1.6; }
+#write { max-width: 860px; margin: 0px auto; padding: 30px 30px 100px; }
+#write > ul:first-child, #write > ol:first-child { margin-top: 30px; }
+a { color: rgb(65, 131, 196); }
+h1, h2, h3, h4, h5, h6 { position: relative; margin-top: 1rem; margin-bottom: 1rem; font-weight: bold; line-height: 1.4; cursor: text; }
+h1:hover a.anchor, h2:hover a.anchor, h3:hover a.anchor, h4:hover a.anchor, h5:hover a.anchor, h6:hover a.anchor { text-decoration: none; }
+h1 tt, h1 code { font-size: inherit; }
+h2 tt, h2 code { font-size: inherit; }
+h3 tt, h3 code { font-size: inherit; }
+h4 tt, h4 code { font-size: inherit; }
+h5 tt, h5 code { font-size: inherit; }
+h6 tt, h6 code { font-size: inherit; }
+h1 { padding-bottom: 0.3em; font-size: 2.25em; line-height: 1.2; border-bottom: 1px solid rgb(238, 238, 238); }
+h2 { padding-bottom: 0.3em; font-size: 1.75em; line-height: 1.225; border-bottom: 1px solid rgb(238, 238, 238); }
+h3 { font-size: 1.5em; line-height: 1.43; }
+h4 { font-size: 1.25em; }
+h5 { font-size: 1em; }
+h6 { font-size: 1em; color: rgb(119, 119, 119); }
+p, blockquote, ul, ol, dl, table { margin: 0.8em 0px; }
+li > ol, li > ul { margin: 0px; }
+hr { height: 2px; padding: 0px; margin: 16px 0px; background-color: rgb(231, 231, 231); border: 0px none; overflow: hidden; box-sizing: content-box; }
+li p.first { display: inline-block; }
+ul, ol { padding-left: 30px; }
+ul:first-child, ol:first-child { margin-top: 0px; }
+ul:last-child, ol:last-child { margin-bottom: 0px; }
+blockquote { border-left: 4px solid rgb(223, 226, 229); padding: 0px 15px; color: rgb(119, 119, 119); }
+blockquote blockquote { padding-right: 0px; }
+table { padding: 0px; word-break: initial; }
+table tr { border-top: 1px solid rgb(223, 226, 229); margin: 0px; padding: 0px; }
+table tr:nth-child(2n), thead { background-color: rgb(248, 248, 248); }
+table tr th { font-weight: bold; border-width: 1px 1px 0px; border-top-style: solid; border-right-style: solid; border-left-style: solid; border-top-color: rgb(223, 226, 229); border-right-color: rgb(223, 226, 229); border-left-color: rgb(223, 226, 229); border-image: initial; border-bottom-style: initial; border-bottom-color: initial; text-align: left; margin: 0px; padding: 6px 13px; }
+table tr td { border: 1px solid rgb(223, 226, 229); text-align: left; margin: 0px; padding: 6px 13px; }
+table tr th:first-child, table tr td:first-child { margin-top: 0px; }
+table tr th:last-child, table tr td:last-child { margin-bottom: 0px; }
+.CodeMirror-lines { padding-left: 4px; }
+.code-tooltip { box-shadow: rgba(0, 28, 36, 0.3) 0px 1px 1px 0px; border-top: 1px solid rgb(238, 242, 242); }
+.md-fences, code, tt { border: 1px solid rgb(231, 234, 237); background-color: rgb(248, 248, 248); border-radius: 3px; padding: 2px 4px 0px; font-size: 0.9em; }
+code { background-color: rgb(243, 244, 244); padding: 0px 2px; }
+.md-fences { margin-bottom: 15px; margin-top: 15px; padding-top: 8px; padding-bottom: 6px; }
+.md-task-list-item > input { margin-left: -1.3em; }
+@media print {
+  html { font-size: 13px; }
+  table, pre { break-inside: avoid; }
+  pre { word-wrap: break-word; }
+}
+.md-fences { background-color: rgb(248, 248, 248); }
+#write pre.md-meta-block { padding: 1rem; font-size: 85%; line-height: 1.45; background-color: rgb(247, 247, 247); border: 0px; border-radius: 3px; color: rgb(119, 119, 119); margin-top: 0px !important; }
+.mathjax-block > .code-tooltip { bottom: 0.375rem; }
+.md-mathjax-midline { background: rgb(250, 250, 250); }
+#write > h3.md-focus::before { left: -1.5625rem; top: 0.375rem; }
+#write > h4.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
+#write > h5.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
+#write > h6.md-focus::before { left: -1.5625rem; top: 0.285714rem; }
+.md-image > .md-meta { border-radius: 3px; padding: 2px 0px 0px 4px; font-size: 0.9em; color: inherit; }
+.md-tag { color: rgb(167, 167, 167); opacity: 1; }
+.md-toc { margin-top: 20px; padding-bottom: 20px; }
+.sidebar-tabs { border-bottom: none; }
+#typora-quick-open { border: 1px solid rgb(221, 221, 221); background-color: rgb(248, 248, 248); }
+#typora-quick-open-item { background-color: rgb(250, 250, 250); border-color: rgb(254, 254, 254) rgb(229, 229, 229) rgb(229, 229, 229) rgb(238, 238, 238); border-style: solid; border-width: 1px; }
+.on-focus-mode blockquote { border-left-color: rgba(85, 85, 85, 0.12); }
+header, .context-menu, .megamenu-content, footer { font-family: "Segoe UI", Arial, sans-serif; }
+.file-node-content:hover .file-node-icon, .file-node-content:hover .file-node-open-state { visibility: visible; }
+.mac-seamless-mode #typora-sidebar { background-color: var(--side-bar-bg-color); }
+.md-lang { color: rgb(180, 101, 77); }
+.html-for-mac .context-menu { --item-hover-bg-color: #E6F0FE; }
+#md-notification .btn { border: 0px; }
+.dropdown-menu .divider { border-color: rgb(229, 229, 229); }
+
+
+
+
+
+ .typora-export li, .typora-export p, .typora-export,  .footnote-line {white-space: normal;} 
+</style>
+</head>
+<body class='typora-export os-windows' >
+<div  id='write'  class = 'is-node'><p>&nbsp;</p><h1><a name='header-n2' class='md-header-anchor '></a>第四章 实验设计与评估指标</h1><h2><a name='header-n3' class='md-header-anchor '></a>4.1 数据集与实验设计</h2><h3><a name='header-n4' class='md-header-anchor '></a>4.1.1 数据集特性</h3><h4><a name='header-n5' class='md-header-anchor '></a>MovieLens</h4><p>出自F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets: History and Context. ACM Transactions on Interactive Intelligent Systems (TiiS) 5, 4, Article 19 (December 2015), 19 pages. </p><h4><a name='header-n7' class='md-header-anchor '></a>该数据集包含在线电影推荐服务<a href='http://www.movielens.org/'>MovieLens</a>的  69878 位用户对 10681 部电影提出的 10000054 个评分和 95580 个标签。</h4><p>用户是随机选择的。所有选定的用户至少评价过 20 部电影。与之前的 MovieLens 数据集不同，本数据集不包含人口统计信息。每个用户都由一个 ID 表示，不提供任何其他信息。</p><p>数据包含在三个文件中：<code>movies.dat</code>、 <code>ratings.dat</code>和<code>tags.dat</code>。</p><h2><a name='header-n10' class='md-header-anchor '></a>4.2 实验基本思路</h2><p>实验采用控制变量法，分两阶段验证假设：</p><p>1.基线实验：</p><ul><li><p>目标：验证传统协同过滤在千万级数据的可行性</p></li><li><p>参数设置：
+<span>	</span>   相似度阈值：Pearson &gt; 0.3
+ <span>		</span>邻域规模：动态调整（10-50人）</p></li><li><p>计算流程：</p><p><img src='C:\Users\sihhye\Desktop\图表截图\Screenshot 2025-04-14 001227.png' alt='Screenshot 2025-04-14 001227' referrerPolicy='no-referrer' /></p></li></ul><p>2.优化实验：</p><ul><li>创新点：引入乘积量化（PQ）加速策略</li><li>量化参数：</li></ul><figure><table><thead><tr><th>参数</th><th>值</th><th>理论依据</th></tr></thead><tbody><tr><td>子空间数（M）</td><td>8</td><td>平衡压缩率与重建误差</td></tr><tr><td>码本大小（K）</td><td>256</td><td>满足K=2 ^8的二进制存储优化</td></tr></tbody></table></figure><ul><li>加速原理：</li></ul><div contenteditable="false" spellcheck="false" class="mathjax-block md-end-block md-math-block md-rawblock" id="mathjax-n43" cid="n43" mdtype="math_block"><div class="md-rawblock-container md-math-container" tabindex="-1"><div class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-1-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="264.264px" height="25.0694px" viewBox="0 -956.9 13288.4 1260.5" role="img" focusable="false" style="vertical-align: -0.705ex; max-width: 100%;" class="in-text-selection"><defs><path stroke-width="0" id="E1-MJMATHI-4F" d="M740 435Q740 320 676 213T511 42T304 -22Q207 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435ZM637 476Q637 565 591 615T476 665Q396 665 322 605Q242 542 200 428T157 216Q157 126 200 73T314 19Q404 19 485 98T608 313Q637 408 637 476Z"></path><path stroke-width="0" id="E1-MJMAIN-28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path><path stroke-width="0" id="E1-MJMATHI-6E" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path><path stroke-width="0" id="E1-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path stroke-width="0" id="E1-MJMAIN-29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path><path stroke-width="0" id="E1-MJMAIN-2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path><path stroke-width="0" id="E1-MJMATHI-6C" d="M117 59Q117 26 142 26Q179 26 205 131Q211 151 215 152Q217 153 225 153H229Q238 153 241 153T246 151T248 144Q247 138 245 128T234 90T214 43T183 6T137 -11Q101 -11 70 11T38 85Q38 97 39 102L104 360Q167 615 167 623Q167 626 166 628T162 632T157 634T149 635T141 636T132 637T122 637Q112 637 109 637T101 638T95 641T94 647Q94 649 96 661Q101 680 107 682T179 688Q194 689 213 690T243 693T254 694Q266 694 266 686Q266 675 193 386T118 83Q118 81 118 75T117 65V59Z"></path><path stroke-width="0" id="E1-MJMATHI-6F" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path><path stroke-width="0" id="E1-MJMATHI-67" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">计</text><g transform="translate(804,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">算</text></g><g transform="translate(1652,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">复</text></g><g transform="translate(2545,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">杂</text></g><g transform="translate(3393,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">度</text></g><g transform="translate(4241,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">从</text></g><use xlink:href="#E1-MJMATHI-4F" x="5134" y="0"></use><use xlink:href="#E1-MJMAIN-28" x="5897" y="0"></use><g transform="translate(6286,0)"><use xlink:href="#E1-MJMATHI-6E" x="0" y="0"></use><use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32" x="848" y="583"></use></g><use xlink:href="#E1-MJMAIN-29" x="7339" y="0"></use><use xlink:href="#E1-MJMAIN-2192" x="8006" y="0"></use><use xlink:href="#E1-MJMATHI-4F" x="9284" y="0"></use><use xlink:href="#E1-MJMAIN-28" x="10047" y="0"></use><use xlink:href="#E1-MJMATHI-6E" x="10436" y="0"></use><use xlink:href="#E1-MJMATHI-6C" x="11036" y="0"></use><use xlink:href="#E1-MJMATHI-6F" x="11334" y="0"></use><use xlink:href="#E1-MJMATHI-67" x="11819" y="0"></use><use xlink:href="#E1-MJMATHI-6E" x="12299" y="0"></use><use xlink:href="#E1-MJMAIN-29" x="12899" y="0"></use></g></svg></span></div><script type="math/tex; mode=display" id="MathJax-Element-1">计算复杂度从O(n^2 )→O(nlogn)</script></div></div><h2><a name='header-n44' class='md-header-anchor '></a>4.3 评估指标</h2><h3><a name='header-n45' class='md-header-anchor '></a>4.3.1 推荐质量评估：前十电影与评分依据</h3><p><strong>1.算法原理支撑</strong></p><ul><li><p>基础协同过滤：</p><ul><li><p>邻域筛选：基于用户相似度动态选择Top-N邻居（N=50），权重计算：</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744596729197.png' alt='1744596729197' referrerPolicy='no-referrer' /></p></li><li><p>评分预测：</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744596948565.png' alt='1744596948565' referrerPolicy='no-referrer' /></p></li></ul></li><li><p>PQ优化方法</p><ul><li><p>特征降维：用户特征从原始10,681维压缩至40维，通过：</p><p><span>	</span></p><div contenteditable="false" spellcheck="false" class="mathjax-block md-end-block md-math-block md-rawblock" id="mathjax-n63" cid="n63" mdtype="math_block"><div class="md-rawblock-container md-math-container" tabindex="-1"><div class="MathJax_SVG_Display" style="text-align: center;"><span class="MathJax_SVG" id="MathJax-Element-2-Frame" tabindex="-1" style="font-size: 100%; display: inline-block;"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="355.847px" height="22.0556px" viewBox="0 -806.1 17893.4 1109.7" role="img" focusable="false" style="vertical-align: -0.705ex; max-width: 100%;" class="in-text-selection"><defs><path stroke-width="0" id="E2-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path><path stroke-width="0" id="E2-MJMAIN-5B" d="M118 -250V750H255V710H158V-210H255V-250H118Z"></path><path stroke-width="0" id="E2-MJMAIN-2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path><path stroke-width="0" id="E2-MJMATHI-54" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path><path stroke-width="0" id="E2-MJMATHI-46" d="M48 1Q31 1 31 11Q31 13 34 25Q38 41 42 43T65 46Q92 46 125 49Q139 52 144 61Q146 66 215 342T285 622Q285 629 281 629Q273 632 228 634H197Q191 640 191 642T193 659Q197 676 203 680H742Q749 676 749 669Q749 664 736 557T722 447Q720 440 702 440H690Q683 445 683 453Q683 454 686 477T689 530Q689 560 682 579T663 610T626 626T575 633T503 634H480Q398 633 393 631Q388 629 386 623Q385 622 352 492L320 363H375Q378 363 398 363T426 364T448 367T472 374T489 386Q502 398 511 419T524 457T529 475Q532 480 548 480H560Q567 475 567 470Q567 467 536 339T502 207Q500 200 482 200H470Q463 206 463 212Q463 215 468 234T473 274Q473 303 453 310T364 317H309L277 190Q245 66 245 60Q245 46 334 46H359Q365 40 365 39T363 19Q359 6 353 0H336Q295 2 185 2Q120 2 86 2T48 1Z"></path><path stroke-width="0" id="E2-MJMAIN-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path stroke-width="0" id="E2-MJMATHI-49" d="M43 1Q26 1 26 10Q26 12 29 24Q34 43 39 45Q42 46 54 46H60Q120 46 136 53Q137 53 138 54Q143 56 149 77T198 273Q210 318 216 344Q286 624 286 626Q284 630 284 631Q274 637 213 637H193Q184 643 189 662Q193 677 195 680T209 683H213Q285 681 359 681Q481 681 487 683H497Q504 676 504 672T501 655T494 639Q491 637 471 637Q440 637 407 634Q393 631 388 623Q381 609 337 432Q326 385 315 341Q245 65 245 59Q245 52 255 50T307 46H339Q345 38 345 37T342 19Q338 6 332 0H316Q279 2 179 2Q143 2 113 2T65 2T43 1Z"></path><path stroke-width="0" id="E2-MJMATHI-44" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path><path stroke-width="0" id="E2-MJMAIN-5D" d="M22 710V750H159V-250H22V-210H119V710H22Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">特</text><g transform="translate(848,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">征</text></g><use xlink:href="#E2-MJMAIN-3D" x="1930" y="0"></use><use xlink:href="#E2-MJMAIN-5B" x="2985" y="0"></use><g transform="translate(3263,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">流</text></g><g transform="translate(4156,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">派</text></g><g transform="translate(5004,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">偏</text></g><g transform="translate(5852,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">好</text></g><use xlink:href="#E2-MJMAIN-2C" x="6745" y="0"></use><g transform="translate(7190,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">标</text></g><g transform="translate(8083,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">签</text></g><use xlink:href="#E2-MJMATHI-54" x="8976" y="0"></use><use xlink:href="#E2-MJMATHI-46" x="9680" y="0"></use><use xlink:href="#E2-MJMAIN-2212" x="10651" y="0"></use><use xlink:href="#E2-MJMATHI-49" x="11651" y="0"></use><use xlink:href="#E2-MJMATHI-44" x="12155" y="0"></use><use xlink:href="#E2-MJMATHI-46" x="12983" y="0"></use><use xlink:href="#E2-MJMAIN-2C" x="13732" y="0"></use><g transform="translate(14177,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">评</text></g><g transform="translate(15025,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">分</text></g><g transform="translate(15918,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">分</text></g><g transform="translate(16811,0)"><text font-family="STIXGeneral,'Arial Unicode MS',serif" stroke="none" transform="scale(50.259) matrix(1 0 0 -1 0 0)">布</text></g><use xlink:href="#E2-MJMAIN-5D" x="17615" y="0"></use></g></svg></span></div><script type="math/tex; mode=display" id="MathJax-Element-2">特征=[流派偏好,标签TF-IDF,评分分布]</script></div></div></li><li><p>量化近似：PQ编码将相似度计算简化为码本内积：</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744597068129.png' alt='1744597068129' referrerPolicy='no-referrer' /></p></li></ul></li></ul><h3><a name='header-n67' class='md-header-anchor '></a>4.3.2 系统效率评估:耗时计算依据</h3><p>1.时间消耗分解</p><figure><table><thead><tr><th>阶段</th><th>基础方法</th><th>PQ优化</th></tr></thead><tbody><tr><td>数据加载</td><td>逐行解析（O(n)）</td><td>内存映射+并行预处理（O(n/p)）</td></tr><tr><td>特征工程</td><td>无显式特征构建</td><td>40维稠密向量生成（O(dn)）</td></tr><tr><td>相似度计算</td><td>全量用户对计算（O(n²)）</td><td>PQ编码近似（O(n log n)）</td></tr><tr><td>排序</td><td>全量排序（O(m log m)）</td><td>分桶排序（O(m)）</td></tr></tbody></table></figure><ul><li><p>关键瓶颈分析：</p><ul><li><p>基础方法中，用户相似度计算占时95%以上（277.6秒/总耗时485.5秒），源于双重循环：</p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="c++"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="c++"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">for</span> (<span class="cm-keyword">auto</span><span class="cm-operator">&amp;</span> <span class="cm-variable">u1</span> : <span class="cm-variable">users</span>) { &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment">// O(n)</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;<span class="cm-keyword">for</span> (<span class="cm-keyword">auto</span><span class="cm-operator">&amp;</span> <span class="cm-variable">u2</span> : <span class="cm-variable">users</span>) { &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment">// O(n)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">compute_similarity</span>(<span class="cm-variable">u1</span>, <span class="cm-variable">u2</span>); &nbsp;<span class="cm-comment">// 耗时核心</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">  }</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">}</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 112px;"></div><div class="CodeMirror-gutters" style="display: none; height: 112px;"></div></div></div></pre></li><li><p>PQ方法通过以下优化降低耗时：</p><ul><li><strong>并行化</strong>：OpenMP加速数据加载</li><li><strong>量化跳跃</strong>：仅计算同码本簇内用户（减少计算量80%）</li></ul></li></ul></li></ul><p>2.时间计算依据</p><ul><li><p>实验测量法：</p><pre spellcheck="false" class="md-fences md-end-block ty-contain-cm modeLoaded" lang="c++"><div class="CodeMirror cm-s-inner CodeMirror-wrap" lang="c++"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 0px; left: 8px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">auto</span> <span class="cm-variable">start</span> <span class="cm-operator">=</span> <span class="cm-variable">high_resolution_clock::now</span>();</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">load_ratings</span>(...); <span class="cm-comment">// 数据加载阶段</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">auto</span> <span class="cm-variable">end</span> <span class="cm-operator">=</span> <span class="cm-variable">high_resolution_clock::now</span>();</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">analysis</span>.<span class="cm-variable">load_time</span> <span class="cm-operator">=</span> <span class="cm-variable">duration_cast</span><span class="cm-operator">&lt;</span><span class="cm-variable">milliseconds</span><span class="cm-operator">&gt;</span>(<span class="cm-variable">end</span> <span class="cm-operator">-</span> <span class="cm-variable">start</span>).<span class="cm-variable">count</span>() <span class="cm-operator">/</span> <span class="cm-number">1000.0</span>;</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 90px;"></div><div class="CodeMirror-gutters" style="display: none; height: 90px;"></div></div></div></pre></li><li><p>理论验证：</p><ul><li>数据加载复杂度：
+基础方法：69878用户×10681电影≈7.5亿次I/O操作
+PQ方法：内存映射减少磁盘寻址次数（耗时↓77%）</li><li>推荐生成复杂度：
+基础方法：69878²≈4.8×10⁹次相似度计算
+PQ方法：8子空间×256码本→计算量降低至1.2×10⁷次</li></ul></li></ul><h1><a name='header-n116' class='md-header-anchor '></a>第五章 实现结果对比分析</h1><h2><a name='header-n117' class='md-header-anchor '></a>5.1 推荐质量评估</h2><h3><a name='header-n118' class='md-header-anchor '></a>5.1.1全局准确性对比</h3><p>1.全局准确性对比指标示例</p><figure><table><thead><tr><th>指标</th><th>基础方法</th><th>PQ优化</th><th>差异分析</th></tr></thead><tbody><tr><td>RMSE</td><td>0.89</td><td>0.91</td><td>量化误差导致轻微上升（+2.2%）</td></tr><tr><td>MAE</td><td>0.71</td><td>0.73</td><td>绝对误差波动在可控范围（&lt;3%）</td></tr><tr><td>HitRate@10</td><td>68.7%</td><td>66.5%</td><td>因近似计算下降3.2%</td></tr></tbody></table></figure><ul><li><p>误差来源分析：</p><ul><li>量化信息损失：40维特征压缩损失高频细节（Top1电影评分误差达±0.5）</li><li>邻域覆盖缩减：仅计算同码本簇用户，导致部分潜在高相似用户漏检</li></ul></li></ul><p>2.全局准确性对比指标说明</p><ul><li><p>RMSE（Root Mean Square Error，均方根误差）</p><ul><li><p>定义：
+衡量预测评分与用户真实评分的平均偏差程度，计算所有预测误差的平方均值的平方根。</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744599871838.png' alt='1744599871838' referrerPolicy='no-referrer' /><span>	</span></p></li><li><p>实验意义：</p><ul><li><p>基础方法（0.89）：表示预测评分平均偏离真实评分约0.89分。</p></li><li><p>PQ优化方法（0.91）：量化误差导致误差轻微上升（+0.02），但仍在可接受范围。</p></li><li><p>敏感度：对高误差（如预测5分但真实1分）敏感，因平方放大误差。</p><p>&nbsp;</p></li></ul></li></ul></li><li><p>MAE（Mean Absolute Error，平均绝对误差）</p><ul><li><p>定义：
+预测评分与真实评分的绝对误差的平均值。</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744601078426.png' alt='1744601078426' referrerPolicy='no-referrer' /></p></li><li><p>实验意义：</p><ul><li>基础方法（0.71）：平均每个预测偏离真实评分0.71分。</li><li>PQ优化方法（0.73）：误差增长0.02，与RMSE趋势一致。</li><li>特点：对异常值不敏感，直接反映误差绝对值。</li></ul></li></ul></li><li><p>HitRate@10（命中率@10）</p><ul><li><p>定义：</p><p>在推荐的前10个电影中，用户实际评分高于阈值（如4分）的比例。</p><p><img src='C:\Users\sihhye\AppData\Roaming\Typora\typora-user-images\1744601160499.png' alt='1744601160499' referrerPolicy='no-referrer' /></p><ul><li>基础方法（68.7%）：约68.7%的用户在前10推荐中至少有一个高评分电影。</li><li>PQ优化方法（66.5%）：因近似计算导致覆盖率下降3.2%，但仍在合理范围内。</li><li>实际价值：衡量推荐列表的实用性（是否能覆盖用户真实兴趣）。</li></ul></li></ul></li></ul><h2><a name='header-n196' class='md-header-anchor '></a>5.2 系统效率优化验证</h2><h3><a name='header-n197' class='md-header-anchor '></a>5.2.1耗时分解对比</h3><figure><table><thead><tr><th>阶段</th><th>基础方法</th><th>PQ优化</th><th>优化效果</th></tr></thead><tbody><tr><td>数据加载</td><td>207.6秒</td><td>62.77秒</td><td>耗时降低 77.4%（内存映射+并行I/O）</td></tr><tr><td>推荐生成</td><td>277.9秒</td><td>167.2秒</td><td>耗时降低39.8%（PQ近似计算）</td></tr><tr><td>总执行时间</td><td>485.5秒</td><td>195.4秒</td><td>效率提升 2.5倍</td></tr></tbody></table></figure><h3><a name='header-n198' class='md-header-anchor '></a>5.2.2关键优化策略</h3><p>1.数据加载优化：</p><ul><li>内存映射技术：通过ifstream的二进制读取，减少磁盘I/O次数。</li><li>并行预处理：使用#pragma omp parallel for分割文件解析任务，提升吞吐量。</li></ul><p>2.推荐生成优化：</p><ul><li>PQ编码加速：将用户特征从原始高维稀疏向量压缩为8子空间编码，计算复杂度从全量用户的O(n^2)降为码本内积的O(n log n)。</li><li>分桶排序：基于预测评分分桶筛选Top10，避免全量排序的O(m log m)开销。</li></ul><h2><a name='header-n200' class='md-header-anchor '></a>5.3 工程实践启示</h2><h3><a name='header-n201' class='md-header-anchor '></a>5.3.1优化方案选择建议</h3><figure><table><thead><tr><th>场景需求</th><th>推荐方案</th><th>理论依据</th></tr></thead><tbody><tr><td>延迟敏感</td><td>PQ优化方法</td><td>总耗时195秒（满足分钟级响应）</td></tr><tr><td>精度敏感</td><td>基础协同过滤</td><td>RMSE=0.89（误差最低）</td></tr><tr><td>资源受限</td><td>PQ优化方法</td><td>内存占用3.2GB（适合边缘设备）</td></tr></tbody></table></figure><p>&nbsp;</p><h3><a name='header-n202' class='md-header-anchor '></a>5.3.2代码可扩展性验证</h3></div>
+</body>
+</html>
